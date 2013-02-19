@@ -1,8 +1,9 @@
 package divide;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -25,10 +26,12 @@ public class Algorithm
 
 		Set< V > gamma( final int n, final Set< V > region )
 		{
+			if ( n < 1 )
+				throw new IllegalArgumentException();
 			if ( n == 1 )
 				return gamma( region );
 			else
-				return gamma( n - 1, region );
+				return gamma( n - 1, gamma( region ) );
 		}
 
 		Map< V, R > restrict( final Map< V, R > assignment, final Set< V > region )
@@ -46,10 +49,13 @@ public class Algorithm
 		public int next( int kappa );
 	}
 
+	public static Deque< ? > conflictsRemaining;
+	public static Map< ?, Integer > kappasFinal;
+
 	public static < V, R > Map< V, R > solve( final ProblemGraph< V, R > problem, final int kappaStart, final KappaUpdateFunction u )
 	{
 		final Set< V > variables = problem.allVariables();
-		final Set< V > conflicts = new HashSet< V >( variables );
+		final Deque< V > conflicts = new ArrayDeque< V >( variables );
 		final Map< V, Integer > kappas = new HashMap< V, Integer >();
 		for ( final V v : variables )
 			kappas.put( v, kappaStart );
@@ -57,8 +63,7 @@ public class Algorithm
 
 		while ( !conflicts.isEmpty() )
 		{
-			final V v = conflicts.iterator().next();
-			conflicts.remove( v );
+			final V v = conflicts.removeFirst();
 
 			final Set< V > gammaV = problem.gamma( Collections.singleton( v ) );
 
@@ -87,14 +92,18 @@ public class Algorithm
 				else if ( !areConsistent( sigma, solutions.get( vprime ) ) )
 				{
 					conflicts.add( vprime );
-					kappas.put( vprime, Math.max( kappa, u.next( kappas.get( vprime ) ) ) );
+//					kappas.put( vprime, Math.max( kappa, kappas.get( vprime ) ) );
 				}
+			kappas.put( v, u.next( kappa ) );
 		}
 
 		final Map< V, R > globalSolution = new HashMap< V, R >();
 		for ( final Map< V, R > s : solutions.values() )
 			for ( final Entry< V, R > entry : s.entrySet() )
 				globalSolution.put( entry.getKey(), entry.getValue() );
+
+		conflictsRemaining = conflicts;
+		kappasFinal = kappas;
 
 		return globalSolution;
 	}
@@ -108,7 +117,4 @@ public class Algorithm
 				return false;
 		return true;
 	}
-
-	public static void main( final String[] args )
-	{}
 }
