@@ -12,7 +12,7 @@
  *	Minimization in Vision."
  *	Yuri Boykov and Vladimir Kolmogorov.
  *	In IEEE Transactions on Pattern Analysis and Machine Intelligence
- *	(PAMI), 
+ *	(PAMI),
  *	September 2004
  *
  *	This algorithm was developed by Yuri Boykov and Vladimir Kolmogorov
@@ -32,21 +32,21 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The two possible segments, represented as special terminal nodes in the graph.
- */
-enum Terminal {
-
-	FOREGROUND, // a.k.a. the source
-	BACKGROUND; // a.k.a. the sink
-}
-
-/**
  * Class implementing the grach cut algorithm.
  */
 public class GraphCut {
 
+	/**
+	 * The two possible segments, represented as special terminal nodes in the graph.
+	 */
+	public static enum Terminal {
+
+		FOREGROUND, // a.k.a. the source
+		BACKGROUND; // a.k.a. the sink
+	}
+
 	// graph structure
-	private Graph graph;
+	private final Graph graph;
 
 	// counter for initialisation of edges
 	private int edgeNum;
@@ -61,11 +61,11 @@ public class GraphCut {
 	// elements of the lists, activeQueueLast to the last ones.
 	// In between, nodes are connected via reference to next node
 	// in each node.
-	private int[] activeQueueFirst;
-	private int[] activeQueueLast;
+	private final int[] activeQueueFirst;
+	private final int[] activeQueueLast;
 
 	// list of orphans
-	private LinkedList<Integer> orphans;
+	private final LinkedList<Integer> orphans;
 
 	// counter for iterations of main loop
 	private int time;
@@ -75,11 +75,11 @@ public class GraphCut {
 	 * for the given number of nodes and edges.
 	 *
 	 * @param numNodes The number of nodes that should be created.
-	 * @param numEdges The number of edges that you can add. A directed edge and its 
+	 * @param numEdges The number of edges that you can add. A directed edge and its
 	 *                 counterpart (i.e., the directed edge in the other
 	 *                 direction) count as one edge.
 	 */
-	public GraphCut(int numNodes, int numEdges) {
+	public GraphCut(final int numNodes, final int numEdges) {
 		graph            = new Graph(numNodes, numEdges);
 		edgeNum          = 0;
 		totalFlow        = 0;
@@ -97,9 +97,9 @@ public class GraphCut {
 	 * @param source The affinity of this node to the foreground (i.e., source)
 	 * @param sink   The affinity of this node to the background (i.e., sink)
 	 */
-	public void setTerminalWeights(int node, float source, float sink) {
+	public void setTerminalWeights(final int node, float source, float sink) {
 
-		float delta = graph.getResidualNodeCapacity(node);
+		final float delta = graph.getResidualNodeCapacity(node);
 
 		if (delta > 0)
 			source += delta;
@@ -121,7 +121,7 @@ public class GraphCut {
 	 * @param node2   The second node.
 	 * @param weight  The weight (i.e., the cost) of the connecting edge.
 	 */
-	public void setEdgeWeight(int node1, int node2, float weight) {
+	public void setEdgeWeight(final int node1, final int node2, final float weight) {
 
 		setEdgeWeight(node1, node2, weight, weight);
 	}
@@ -139,11 +139,11 @@ public class GraphCut {
 	 * @param weight2to1 The weight (i.e., the cost) of the directed edge from
 	 *                   node2 to node1.
 	 */
-	public void setEdgeWeight(int node1, int node2, float weight1to2, float weight2to1) {
+	public void setEdgeWeight(final int node1, final int node2, final float weight1to2, final float weight2to1) {
 
 		// get edge indices
-		int edge        = edgeNum; edgeNum++;
-		int reverseEdge = edgeNum; edgeNum++;
+		final int edge        = edgeNum; edgeNum++;
+		final int reverseEdge = edgeNum; edgeNum++;
 
 		// link edges
 		graph.setSister(edge, reverseEdge);
@@ -174,7 +174,7 @@ public class GraphCut {
 	 *                     segmentation compared to a previous call, can be set
 	 *                     to <tt>null</tt>
 	 */
-	public float computeMaximumFlow(boolean reuseTrees, List<Integer> changedNodes) {
+	public float computeMaximumFlow(boolean reuseTrees, final List<Integer> changedNodes) {
 
 		if (maxflowIteration == 0)
 			reuseTrees = false;
@@ -211,7 +211,7 @@ public class GraphCut {
 				for (edge = graph.getFirstOutgoing(activeNode); edge != Graph.NONE; edge = graph.getNextEdge(edge)) {
 					if (graph.getResidualEdgeCapacity(edge) != 0) {
 
-						int headNode = graph.getHead(edge);
+						final int headNode = graph.getHead(edge);
 
 						if (graph.getParent(headNode) == Graph.NONE) {
 							// free node found, add to source tree
@@ -242,7 +242,7 @@ public class GraphCut {
 				for (edge = graph.getFirstOutgoing(activeNode); edge != Graph.NONE; edge = graph.getNextEdge(edge)) {
 					if (graph.getResidualEdgeCapacity(graph.getSister(edge)) != 0) {
 
-						int headNode = graph.getHead(edge);
+						final int headNode = graph.getHead(edge);
 
 						if (graph.getParent(headNode) == Graph.NONE) {
 							// free node found, add to sink tree
@@ -285,7 +285,7 @@ public class GraphCut {
 
 				// adoption
 				while (orphans.size() > 0) {
-					int orphan = orphans.poll();
+					final int orphan = orphans.poll();
 					if (graph.isInSink(orphan))
 						processSinkOrphan(orphan);
 					else
@@ -319,7 +319,7 @@ public class GraphCut {
 	 * @return Either <tt>Terminal.FOREGROUND</tt> or
 	 *         <tt>Terminal.BACKGROUND</tt>
 	 */
-	public Terminal getTerminal(int node) {
+	public Terminal getTerminal(final int node) {
 
 		if (graph.getParent(node) != Graph.NONE)
 			return graph.isInSink(node) ? Terminal.BACKGROUND : Terminal.FOREGROUND;
@@ -357,7 +357,7 @@ public class GraphCut {
 	 *
 	 * @param nodeId The node that changed.
 	 */
-	public void markNode(int node) {
+	public void markNode(final int node) {
 
 		if (graph.getNextNode(node) == Graph.NONE) {
 			if (activeQueueLast[1] != Graph.NONE)
@@ -379,7 +379,7 @@ public class GraphCut {
 	/**
 	 * Marks a node as being active and adds it to second queue of active nodes.
 	 */
-	private void setNodeActive(int node) {
+	private void setNodeActive(final int node) {
 
 		if (graph.getNextNode(node) == Graph.NONE) {
 			if (activeQueueLast[1] != Graph.NONE)
@@ -440,7 +440,7 @@ public class GraphCut {
 	/**
 	 * Mark a node as orphan and add it to the front of the queue.
 	 */
-	private void addOrphanAtFront(int node) {
+	private void addOrphanAtFront(final int node) {
 
 		graph.setParent(node, Graph.ORPHAN);
 
@@ -450,7 +450,7 @@ public class GraphCut {
 	/**
 	 * Mark a node as orphan and add it to the back of the queue.
 	 */
-	private void addOrphanAtBack(int node) {
+	private void addOrphanAtBack(final int node) {
 
 		graph.setParent(node, Graph.ORPHAN);
 
@@ -460,7 +460,7 @@ public class GraphCut {
 	/**
 	 * Add a node to the list of potentially changed nodes.
 	 */
-	private void addToChangedList(int node) {
+	private void addToChangedList(final int node) {
 
 		graph.isInChangedList(node, true);
 	}
@@ -590,7 +590,7 @@ public class GraphCut {
 
 		// adoption
 		while (orphans.size() > 0) {
-			int orphan = orphans.poll();
+			final int orphan = orphans.poll();
 			if (graph.isInSink(orphan))
 				processSinkOrphan(orphan);
 			else
@@ -603,7 +603,7 @@ public class GraphCut {
 	 *
 	 * This is done whenever a path between the source and the sink was found.
 	 */
-	private void augment(int middle) {
+	private void augment(final int middle) {
 
 		int node;
 		int edge;
@@ -626,7 +626,7 @@ public class GraphCut {
 
 		if (bottleneck > graph.getResidualNodeCapacity(node))
 			bottleneck = graph.getResidualNodeCapacity(node);
-		
+
 		// 1b - the sink tree
 		for (node = graph.getHead(middle); ; node = graph.getHead(edge)) {
 
@@ -686,7 +686,7 @@ public class GraphCut {
 	/**
 	 * Adopt an orphan.
 	 */
-	private void processSourceOrphan(int orphan) {
+	private void processSourceOrphan(final int orphan) {
 
 		int bestEdge    = Graph.NONE;
 		int minDistance = Integer.MAX_VALUE;
@@ -751,8 +751,8 @@ public class GraphCut {
 			// process neighbors
 			for (int orphanEdge = graph.getFirstOutgoing(orphan); orphanEdge != Graph.NONE; orphanEdge = graph.getNextEdge(orphanEdge)) {
 
-				int node = graph.getHead(orphanEdge);
-				int parentEdge = graph.getParent(node);
+				final int node = graph.getHead(orphanEdge);
+				final int parentEdge = graph.getParent(node);
 				if (!graph.isInSink(node) && parentEdge != Graph.NONE) {
 
 					if (graph.getResidualEdgeCapacity(graph.getSister(orphanEdge)) != 0)
@@ -768,7 +768,7 @@ public class GraphCut {
 	/**
 	 * Adopt an orphan.
 	 */
-	private void processSinkOrphan(int orphan) {
+	private void processSinkOrphan(final int orphan) {
 
 		int bestEdge    = Graph.NONE;
 		int minDistance = Integer.MAX_VALUE;
@@ -833,8 +833,8 @@ public class GraphCut {
 			// process neighbors
 			for (int orphanEdge = graph.getFirstOutgoing(orphan); orphanEdge != Graph.NONE; orphanEdge = graph.getNextEdge(orphanEdge)) {
 
-				int node = graph.getHead(orphanEdge);
-				int parentEdge = graph.getParent(node);
+				final int node = graph.getHead(orphanEdge);
+				final int parentEdge = graph.getParent(node);
 				if (graph.isInSink(node) && parentEdge != Graph.NONE) {
 
 					if (graph.getResidualEdgeCapacity(orphanEdge) != 0)
